@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalog UMKM Kuliner Kupang - Arsitektur Hypermedia</title>
+
+    <!-- Leaflet CSS untuk peta nyata -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #f4f1ec;
+            --text-color: #2d3436;
+            --primary-color: #d35400;
+            --primary-dark: #a04000;
+            --secondary-color: #2c3e50;
+            --accent-color: #e67e22;
+            --accent-soft: #fdebd0;
+            --card-bg: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --shadow-lg: 0 16px 40px rgba(0,0,0,0.12);
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 10% 0%, rgba(230,126,34,0.08), transparent 40%),
+                radial-gradient(circle at 90% 100%, rgba(211,84,0,0.06), transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-color);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        /* ===== Header ===== */
+        header {
+            background: linear-gradient(135deg, #d35400 0%, #e67e22 50%, #f39c12 100%);
+            color: white;
+            padding: 2.5rem 2rem 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: "";
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 220px; height: 220px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+        header::after {
+            content: "";
+            position: absolute;
+            bottom: -80px; left: -40px;
+            width: 180px; height: 180px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+        header h1 {
+            margin: 0 0 8px;
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 800;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 1;
+        }
+        header p {
+            margin: 0;
+            font-size: 1rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== Navbar ===== */
+        nav.permanent-nav {
+            background: linear-gradient(90deg, #8e3d00, #b94000);
+            color: white;
+            padding: 0.85rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.92rem;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 10px;
+            backdrop-filter: blur(6px);
+        }
+        nav.permanent-nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: background 0.25s ease, transform 0.2s ease;
+        }
+        nav.permanent-nav a:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-1px);
+        }
+
+        /* ===== IKON PDF DI NAVBAR ===== */
+        nav.permanent-nav .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        nav.permanent-nav .pdf-nav-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            border-radius: 8px;
+            text-decoration: none;
+            box-shadow: 0 3px 10px rgba(211, 47, 47, 0.4);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            border: 2px solid rgba(255,255,255,0.25);
+            margin-left: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        nav.permanent-nav .pdf-nav-icon:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 16px rgba(211, 47, 47, 0.55);
+        }
+        nav.permanent-nav .pdf-nav-icon .pdf-inner {
+            background: #fff;
+            color: #d32f2f;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 4px 6px;
+            border-radius: 3px;
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        nav.permanent-nav .pdf-nav-icon .pdf-inner::before {
+            content: "";
+            position: absolute;
+            top: -4px; right: -6px;
+            width: 8px; height: 8px;
+            background: linear-gradient(225deg, transparent 50%, #f5b7b1 50%);
+        }
+        nav.permanent-nav .pdf-nav-icon .pdf-label {
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3e50;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, bottom 0.2s ease;
+        }
+        nav.permanent-nav .pdf-nav-icon:hover .pdf-label {
+            opacity: 1;
+            bottom: -34px;
+        }
+
+        /* ===== Container ===== */
+        .container {
+            max-width: 1000px;
+            margin: -30px auto 40px;
+            padding: 30px 32px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            z-index: 5;
+        }
+
+        /* ===== Node Menu ===== */
+        .node-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .node-btn {
+            background: linear-gradient(135deg, var(--secondary-color), #34495e);
+            color: white;
+            border: none;
+            padding: 14px 12px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            transition: all 0.3s cubic-bezier(.2,.8,.3,1);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        .node-btn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.15));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .node-btn:hover {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        .node-btn:hover::after { opacity: 1; }
+        .node-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            box-shadow: 0 0 0 3px rgba(211,84,0,0.25), var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        /* ===== Content ===== */
+        .content-section {
+            border-top: 2px solid #ecf0f1;
+            padding-top: 24px;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--accent-soft);
+            display: inline-block;
+        }
+        h3 {
+            color: var(--primary-dark);
+            font-size: 1.15rem;
+            margin-top: 28px;
+        }
+
+        /* ===== Profil UMKM ===== */
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+        .food-card {
+            background: linear-gradient(160deg, #fff 0%, #fefaf6 100%);
+            border: 1px solid #f0e6dc;
+            border-radius: 14px;
+            padding: 20px 16px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        .food-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.35s ease;
+        }
+        .food-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-color);
+        }
+        .food-card:hover::before { transform: scaleX(1); }
+        .food-icon {
+            font-size: 3.2rem;
+            line-height: 1;
+            margin-bottom: 12px;
+            display: inline-block;
+            transition: transform 0.4s ease;
+        }
+        .food-card:hover .food-icon { transform: scale(1.15) rotate(-5deg); }
+        .food-name {
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .food-price {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-soft), #fde3c8);
+            color: var(--primary-dark);
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            border: 1px solid #f5cfa0;
+        }
+
+        /* ===== Falsafah Rasa ===== */
+        .taste-card {
+            background: linear-gradient(160deg, #fff 0%, #fdfcfa 100%);
+            border-left: 5px solid var(--primary-color);
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .taste-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+        }
+        .taste-card h4 {
+            margin: 0 0 6px 0;
+            color: var(--primary-color);
+            font-size: 1.05rem;
+        }
+        .origin-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: #fff;
+            margin-bottom: 10px;
+            letter-spacing: 0.02em;
+        }
+        .origin-badge::before {
+            content: "📍 ";
+        }
+        .taste-tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            color: #fff;
+            margin-right: 6px;
+            margin-bottom: 4px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .tag-pedas { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        .tag-asam  { background: linear-gradient(135deg, #f39c12, #f1c40f); }
+        .tag-asin  { background: linear-gradient(135deg, #2c3e50, #34495e); }
+        .tag-manis { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+        .tag-gurih { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .tag-asap  { background: linear-gradient(135deg, #7f8c8d, #95a5a6); }
+        .tag-segar { background: linear-gradient(135deg, #16a085, #1abc9c); }
+        .tag-pahit { background: linear-gradient(135deg, #6d4c41, #8d6e63); }
+
+        /* ===== Galeri ===== */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 18px;
+            margin-top: 15px;
+        }
+        .gallery-item {
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #f0e6dc;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .gallery-item:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+            background: #fef5ec;
+        }
+        .gallery-item:hover img { transform: scale(1.08); }
+        .gallery-caption {
+            padding: 12px 14px;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            font-weight: 600;
+            background: linear-gradient(180deg, #fff, #fdfaf7);
+            border-top: 1px solid #f5ede4;
+        }
+
+        /* ===== Video ===== */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid #f0e6dc;
+            background: #000;
+        }
+        .video-wrapper video {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 14px;
+            background: #000;
+        }
+
+        /* ===== Audio ===== */
+        .audio-real {
+            background: linear-gradient(135deg, #fff7ef 0%, #ffe9d6 100%);
+            border: 2px dashed var(--accent-color);
+            border-radius: 14px;
+            padding: 22px;
+            margin-top: 18px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.25s ease;
+        }
+        .audio-real:hover { transform: translateY(-3px); }
+        .audio-real h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary-dark);
+            font-size: 1.05rem;
+        }
+        .audio-real audio {
+            width: 100%;
+            max-width: 480px;
+            margin-top: 10px;
+            border-radius: 30px;
+        }
+
+        /* ===== Peta ===== */
+        #map-real {
+            width: 100%;
+            height: 420px;
+            border-radius: 14px;
+            border: 3px solid var(--accent-color);
+            margin-top: 15px;
+            z-index: 1;
+            box-shadow: var(--shadow-md);
+        }
+        .map-note {
+            font-size: 0.85rem;
+            color: #777;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* ===== Tombol Laporan PDF (di bawah peta) ===== */
+        .laporan-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 22px;
+            margin-bottom: 6px;
+        }
+        .btn-laporan {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px 12px 18px;
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 40px;
+            box-shadow: 0 6px 18px rgba(211, 47, 47, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .btn-laporan:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 26px rgba(211, 47, 47, 0.5);
+            background: linear-gradient(135deg, #e53935, #c62828);
+        }
+        .btn-laporan .pdf-icon {
+            width: 34px;
+            height: 34px;
+            background: #fff;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #d32f2f;
+            letter-spacing: -0.5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-laporan .pdf-icon::before {
+            content: "";
+            position: absolute;
+            top: 0; right: 0;
+            width: 12px; height: 12px;
+            background: linear-gradient(225deg, transparent 50%, #f5b7b1 50%);
+            border-bottom-left-radius: 2px;
+        }
+        .btn-laporan .btn-text {
+            display: inline-flex;
+            flex-direction: column;
+            line-height: 1.1;
+            text-align: left;
+        }
+        .btn-laporan .btn-text small {
+            font-size: 0.68rem;
+            font-weight: 500;
+            opacity: 0.85;
+            letter-spacing: 0.03em;
+        }
+
+        /* ===== Footer ===== */
+        footer {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: linear-gradient(135deg, var(--secondary-color), #1a252f);
+            color: white;
+            margin-top: 40px;
+            font-size: 0.9rem;
+        }
+        footer p { margin: 0; opacity: 0.9; }
+
+        /* ===== Badge ===== */
+        .badge-node {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-left: 10px;
+            vertical-align: middle;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 2px 6px rgba(211,84,0,0.3);
+        }
+
+        /* ===== Sitemap ===== */
+        .sitemap-tree {
+            margin-top: 15px;
+            padding: 16px 18px 16px 24px;
+            border-left: 4px solid var(--accent-color);
+            background: linear-gradient(135deg, #fdfaf7, #fff);
+            border-radius: 0 10px 10px 0;
+            box-shadow: var(--shadow-sm);
+        }
+        .sitemap-tree ul { list-style: none; padding-left: 18px; margin: 6px 0; }
+        .sitemap-tree li { margin: 8px 0; position: relative; }
+        .sitemap-tree li::before {
+            content: "▸";
+            color: var(--primary-color);
+            font-weight: bold;
+            position: absolute;
+            left: -16px;
+        }
+        .sitemap-tree a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        .sitemap-tree a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 600px) {
+            .container { padding: 20px; margin: -20px 12px 30px; }
+            nav.permanent-nav { padding: 0.7rem 1rem; font-size: 0.85rem; }
+            nav.permanent-nav a { margin-left: 8px; padding: 3px 8px; }
+            header { padding: 1.8rem 1rem 2.5rem; }
+            .gallery-item img { height: 170px; }
+            .laporan-section { justify-content: center; }
+            .btn-laporan { width: 100%; justify-content: center; }
+            nav.permanent-nav .pdf-nav-icon { width: 34px; height: 34px; }
+            nav.permanent-nav .pdf-nav-icon .pdf-inner { font-size: 0.6rem; }
+        }
+
+        /* ============================================================
+           CSS TAMBAHAN — KATALOG PROFESIONAL
+           ============================================================ */
+
+        .food-card, .taste-card, .gallery-item {
+            animation: slideUpKatalog 0.55s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+        }
+        .food-card:nth-child(1), .gallery-item:nth-child(1) { animation-delay: 0.04s; }
+        .food-card:nth-child(2), .gallery-item:nth-child(2) { animation-delay: 0.08s; }
+        .food-card:nth-child(3), .gallery-item:nth-child(3) { animation-delay: 0.12s; }
+        .food-card:nth-child(4), .gallery-item:nth-child(4) { animation-delay: 0.16s; }
+        .food-card:nth-child(5), .gallery-item:nth-child(5) { animation-delay: 0.20s; }
+        .food-card:nth-child(6), .gallery-item:nth-child(6) { animation-delay: 0.24s; }
+        @keyframes slideUpKatalog {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .food-icon {
+            background: linear-gradient(135deg, #fff5e6, #fde3c8);
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(211, 84, 0, 0.15);
+            border: 2px solid #fdebd0;
+            margin-bottom: 14px;
+        }
+
+        .food-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.6), transparent);
+            transition: left 0.6s ease;
+            pointer-events: none;
+        }
+        .food-card:hover::after { left: 150%; }
+
+        h2 { position: relative; overflow: hidden; }
+        h2::after {
+            content: "";
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+            border-radius: 2px;
+            animation: slideBarKatalog 0.8s cubic-bezier(0.2, 0.8, 0.3, 1);
+        }
+        @keyframes slideBarKatalog {
+            from { width: 0; }
+            to   { width: 60px; }
+        }
+
+        .katalog-header {
+            background: linear-gradient(135deg, #fff9f2 0%, #fef2e0 100%);
+            border-radius: 16px;
+            padding: 22px 26px;
+            margin: 20px 0 26px;
+            border-left: 6px solid var(--accent-color);
+            box-shadow: 0 4px 14px rgba(211, 84, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .katalog-header::before {
+            content: "";
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 140px; height: 140px;
+            background: radial-gradient(circle, rgba(230, 126, 34, 0.18), transparent 70%);
+            border-radius: 50%;
+        }
+        .katalog-header h3 {
+            margin: 0 0 8px;
+            color: var(--primary-dark);
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        .katalog-header p {
+            margin: 0;
+            color: #555;
+            font-size: 0.92rem;
+            line-height: 1.65;
+            position: relative;
+            z-index: 1;
+        }
+        .katalog-header .katalog-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .katalog-header .stat-item {
+            background: #fff;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            border: 1px solid #f0e6dc;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.25s ease;
+        }
+        .katalog-header .stat-item:hover { transform: translateY(-2px); }
+        .katalog-header .stat-item span {
+            color: var(--primary-color);
+            font-weight: 800;
+        }
+
+        .kategori-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: 30px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px dashed var(--accent-soft);
+        }
+        .kategori-title::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--accent-color), var(--primary-color));
+            border-radius: 3px;
+        }
+
+        .katalog-note {
+            margin-top: 26px;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #fff9f2, #fef2e0);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-color);
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        .katalog-note strong { color: var(--primary-dark); }
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f4f1ec; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #e67e22, #d35400);
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #d35400, #a04000);
+        }
+
+        .taste-tag {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .taste-tag:hover {
+            transform: translateY(-2px) scale(1.08);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .sitemap-tree a {
+            position: relative;
+            padding-left: 6px;
+            transition: all 0.25s ease;
+        }
+        .sitemap-tree a:hover {
+            padding-left: 12px;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Katalog UMKM Kuliner Kupang</h1>
+        <p>Sistem Informasi Digital & Arsitektur Hypermedia Interaktif</p>
+    </header>
+
+    <nav class="permanent-nav">
+        <div>
+            <span><strong>Breadcrumb:</strong> Beranda Kuliner / <span id="current-node-name">Profil UMKM</span></span>
+        </div>
+        <div class="nav-right">
+            <a onclick="switchNode('Profil UMKM')">🏠 Home</a>
+            <a onclick="switchNode('Peta Interaktif')">🗺️ Sitemap</a>
+            <!-- ===== IKON PDF DI SAMPING SITEMAP ===== -->
+            <a class="pdf-nav-icon"
+               href="TUGAS KELOMPOK 9.pdf"
+               target="_blank"
+               rel="noopener"
+               title="Buka Laporan PDF">
+                <span class="pdf-inner">PDF</span>
+                <span class="pdf-label">Laporan</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h3>Pilih Simpul (Node) Eksplorasi Kuliner:</h3>
+        <div class="node-menu" id="nodeMenu">
+            <button class="node-btn active" data-node="Profil UMKM">1. Profil UMKM</button>
+            <button class="node-btn" data-node="Falsafah Rasa">2. Falsafah</button>
+            <button class="node-btn" data-node="Galeri Produk">3. Galeri Produk</button>
+            <button class="node-btn" data-node="Peta Interaktif">4. Peta Interaktif</button>
+        </div>
+
+        <div id="content-display" class="content-section"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Proyek Mini OBE - Arsitektur Hypermedia Interaktif</p>
+    </footer>
+
+    <!-- Leaflet JS untuk peta nyata -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // ================== FALLBACK GAMBAR ==================
+        function imgFallback(imgEl, label, color1, color2) {
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+                    <defs>
+                        <linearGradient id="fb" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="${color1}"/>
+                            <stop offset="100%" stop-color="${color2}"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="300" height="200" fill="url(#fb)"/>
+                    <text x="150" y="105" text-anchor="middle" font-size="20"
+                          fill="#fff" font-family="Poppins, sans-serif" font-weight="bold">
+                        ${label}
+                    </text>
+                </svg>`;
+            imgEl.onerror = null;
+            imgEl.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+        }
+
+        // ================== KONTEN TIAP SIMPUL ==================
+        const nodes = {
+
+            // ---------- 1. PROFIL UMKM (KATALOG PROFESIONAL) ----------
+            'Profil UMKM': `
+                <h2>Simpul 1: Profil UMKM Kuliner Kupang</h2>
+
+                <div class="katalog-header">
+                    <h3>📚 Katalog Resmi UMKM Kuliner</h3>
+                    <p>
+                        Direktori digital ini menghimpun <strong>12 produk kuliner unggulan</strong> dari pelaku Usaha Mikro, Kecil, dan Menengah (UMKM) di Kota Kupang, Nusa Tenggara Timur. Setiap produk telah dikurasi berdasarkan keaslian resep, cita rasa, dan nilai budaya yang diwariskan turun-temurun.
+                    </p>
+                    <div class="katalog-stats">
+                        <div class="stat-item">📦 <span>12</span> Produk</div>
+                        <div class="stat-item">🏪 <span>8+</span> UMKM Terdaftar</div>
+                        <div class="stat-item">🌶️ <span>7</span> Kategori Rasa</div>
+                        <div class="stat-item">📍 <span>6</span> Kabupaten/Kota</div>
+                    </div>
+                </div>
+
+                <div class="kategori-title">🍽️ Makanan Utama</div>
+                <div class="food-grid">
+                    <div class="food-card">
+                        <div class="food-icon">🥩</div>
+                        <div class="food-name">Se'i Sapi</div>
+                        <div class="food-price">Rp 85.000 / porsi</div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-icon">🐟</div>
+                        <div class="food-name">Ikan Kuah Kuning</div>
+                        <div class="food-price">Rp 10.000 / porsi</div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-icon">🍚</div>
+                        <div class="food-name">Nasi Kolo</div>
+                        <div class="food-price">Rp 10.000 / bambu</div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-icon">🌽</div>
+                        <div class="food-name">Jagung Bose</div>
+                        <div class="food-price">Rp 15.000 / porsi</div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-icon">🍗</div>
+                        <div class="food-name">Palepah Manuk</div>
+                        <div class="food-price">Rp 25.000 / porsi</div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-icon">🫔</div>
+                        <div class="food-name">Wollapa</div>
+                        <div class="food-price">Rp 20.000 / porsi</div>
+                    </div>
+                </div>
+
+                <div class="kategori-title">🌶️ Sambal & Pelengkap</div>
+                <div class="food-grid">
+                    <div class="food-card">
+                        <div class="food-icon">🌶️</div>
+                        <div class="food-name">Sambal Lu'at</div>
+                        <div class="food-price">Rp 35.000 / botol</div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-icon">☘️</div>
+                        <div class="food-name">Rumpu Rampe</div>
+                        <div class="food-price">Rp 5.000 / mika</div>
+                    </div>
+                </div>
+
+                <div class="kategori-title">🍿 Camilan Tradisional</div>
+                <div class="food-grid">
+                    <div class="food-card">
+                        <div class="food-icon">🍥</div>
+                        <div class="food-name">Kue Jawada</div>
+                        <div class="food-price">Rp 25.000 / toples</div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-icon">🍿</div>
+                        <div class="food-name">Jagung Titi</div>
+                        <div class="food-price">Rp 20.000 / bungkus</div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-icon">🌯</div>
+                        <div class="food-name">Manggulu</div>
+                        <div class="food-price">Rp 5.000 / porsi</div>
+                    </div>
+                </div>
+
+                <div class="kategori-title">☕ Minuman</div>
+                <div class="food-grid">
+                    <div class="food-card">
+                        <div class="food-icon">☕</div>
+                        <div class="food-name">Kopi Arabika Timor</div>
+                        <div class="food-price">Rp 45.000 / 200 gr</div>
+                    </div>
+                </div>
+
+                <div class="katalog-note">
+                    <strong>📌 Catatan:</strong> Harga dapat berubah sesuai lokasi dan musim. Untuk pemesanan dalam jumlah besar, disarankan menghubungi pelaku UMKM langsung melalui informasi pada simpul Peta Interaktif.
+                </div>
+            `,
+
+            // ---------- 2. FALSAFAH RASA ----------
+            'Falsafah Rasa': `
+                <h2>Simpul 2: Falsafah & Budaya Pangan khas NTT <span class="badge-node">Node 2</span></h2>
+                <p>Setiap hidangan khas Kupang memiliki karakter rasa yang mencerminkan falsafah hidup masyarakat Timor. Berikut penjelasan rasa dan asal daerah dari 12 kuliner UMKM tersebut:</p>
+
+                <div class="taste-card">
+                    <h4>🥩 Se'i Sapi</h4>
+                    <span class="origin-badge">Asal:NTT</span>
+                    <p>
+                        <span class="taste-tag tag-asap">Asap</span>
+                        <span class="taste-tag tag-gurih">Gurih</span>
+                        <span class="taste-tag tag-asin">Asin</span>
+                    </p>
+                    <p>Rasa dominan <strong>asap</strong> dari pengasapan kayu kesambi selama 6–8 jam, dipadukan <strong>gurih</strong> daging sapi dan sentuhan <strong>asin</strong> alami. Rasa ini melambangkan <em>ketekunan dan kehangatan keluarga</em>.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>🌶️ Sambal Lu'at</h4>
+                    <span class="origin-badge">Asal:NTT</span>
+                    <p>
+                        <span class="taste-tag tag-pedas">Pedas</span>
+                        <span class="taste-tag tag-asam">Asam Segar</span>
+                        <span class="taste-tag tag-segar">Menyegarkan</span>
+                    </p>
+                    <p>Kombinasi <strong>pedas</strong> cabai rawit dengan <strong>asam segar</strong> jeruk nipis dan aroma kemangi. Rasa ini menggambarkan karakter masyarakat Kupang: <em>tegas namun menyegarkan</em>.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>🍥 Kue Jawada</h4>
+                    <span class="origin-badge">Asal: Flores & Alor - NTT</span>
+                    <p>
+                        <span class="taste-tag tag-manis">Manis</span>
+                        <span class="taste-tag tag-gurih">Renyah</span>
+                    </p>
+                    <p>Rasa <strong>manis</strong> berlapis dengan tekstur renyah. Setiap lapisan melambangkan <em>tingkatan rasa syukur</em> atas berkah yang berlimpah.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>🍿 Jagung Titi</h4>
+                    <span class="origin-badge">Asal: Timor,Flores & Alor - NTT</span>
+                    <p>
+                        <span class="taste-tag tag-gurih">Gurih</span>
+                        <span class="taste-tag tag-asin">Asin Ringan</span>
+                    </p>
+                    <p>Rasa <strong>gurih</strong> alami jagung yang ditumbuk dan dijemur, dengan sedikit <strong>asin</strong>. Melambangkan <em>kemandirian pangan</em> dan bekal perjalanan masyarakat adat.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>☕ Kopi Arabika Timor</h4>
+                    <span class="origin-badge">Asal: TTS </span>
+                    <p>
+                        <span class="taste-tag tag-asam">Asam</span>
+                        <span class="taste-tag tag-pahit">Pahit</span>
+                        <span class="taste-tag tag-gurih">Gurih</span>
+                    </p>
+                    <p>Karakter <strong>asam</strong> khas kopi dataran tinggi dengan <strong>pahit</strong> yang seimbang. Mencerminkan <em>ketenangan dan kebijaksanaan</em> hidup masyarakat Timor.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>🍚 Nasi Kolo</h4>
+                    <span class="origin-badge">Asal: Ende - NTT</span>
+                    <p>
+                        <span class="taste-tag tag-gurih">Gurih</span>
+                        <span class="taste-tag tag-asap">Aroma Bambu</span>
+                    </p>
+                    <p>Nasi yang dimasak di dalam <strong>bambu</strong> sehingga menghasilkan aroma <strong>gurih</strong> khas bambu bakar. Melambangkan <em>kesederhanaan dan kebersamaan</em> masyarakat Timor yang erat dengan alam.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>🐟 Ikan Kuah Kuning</h4>
+                    <span class="origin-badge">Asal:Kupang - NTT</span>
+                    <p>
+                        <span class="taste-tag tag-asam">Asam</span>
+                        <span class="taste-tag tag-pedas">Pedas</span>
+                        <span class="taste-tag tag-segar">Segar</span>
+                    </p>
+                    <p>Kuah <strong>asam</strong> dari belimbing wuluh/tomat dengan <strong>pedas</strong> cabai dan kunyit, menghasilkan rasa <strong>segar</strong> khas hasil laut. Menggambarkan <em>kedekatan masyarakat pesisir</em> dengan laut.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>🌽 Jagung Bose</h4>
+                    <span class="origin-badge">Asal: Timor & Flores - NTT </span>
+                    <p>
+                        <span class="taste-tag tag-gurih">Gurih</span>
+                        <span class="taste-tag tag-asin">Asin</span>
+                        <span class="taste-tag tag-asap">Aroma Kacang</span>
+                    </p>
+                    <p>Jagung pipil yang dimasak bersama <strong>kacang tanah</strong> dan kelapa, menghasilkan rasa <strong>gurih</strong> dan <strong>asin</strong> yang khas. Melambangkan <em>kebersamaan dan gotong royong</em> dalam memasak bersama.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>☘️ Rumpu Rampe</h4>
+                    <span class="origin-badge">Asal: Kota Kupang - NTT</span>
+                    <p>
+                        <span class="taste-tag tag-pahit">Pahit Ringan</span>
+                        <span class="taste-tag tag-gurih">Gurih</span>
+                    </p>
+                    <p>Tumisan sayur daun (papaya, singkong, dan bunga pepaya) dengan sedikit <strong>pahit</strong> alami yang berpadu <strong>gurih</strong>. Melambangkan <em>kesederhanaan dan kesehatan</em> masyarakat NTT.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>🌯 Manggulu</h4>
+                    <span class="origin-badge">Asal: Sumba - NTT</span>
+                    <p>
+                        <span class="taste-tag tag-manis">Manis</span>
+                        <span class="taste-tag tag-gurih">Gurih</span>
+                    </p>
+                    <p>Pisang kepok yang diolah dengan <strong>gula</strong> dan <strong>kacang</strong>, menghasilkan rasa <strong>manis</strong> legit dengan sentuhan <strong>gurih</strong>. Melambangkan <em>warisan leluhur Sumba</em> yang penuh makna.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>🍗 Palepah Manuk</h4>
+                    <span class="origin-badge">Asal: Flores - NTT</span>
+                    <p>
+                        <span class="taste-tag tag-gurih">Gurih</span>
+                        <span class="taste-tag tag-asam">Asam</span>
+                        <span class="taste-tag tag-pedas">Pedas</span>
+                    </p>
+                    <p>Ayam kampung (<em>manuk</em>) dimasak dengan bumbu <strong>asam</strong> dan <strong>pedas</strong> khas Timor, menghasilkan rasa <strong>gurih</strong> yang kaya. Melambangkan <em>kehangatan hidangan keluarga</em>.</p>
+                </div>
+
+                <div class="taste-card">
+                    <h4>🫔 Wollapa</h4>
+                    <span class="origin-badge">Asal: Sabu  NTT</span>
+                    <p>
+                        <span class="taste-tag tag-gurih">Gurih</span>
+                        <span class="taste-tag tag-asap">Asap</span>
+                        <span class="taste-tag tag-asin">Asin</span>
+                    </p>
+                    <p>Daging babi/ayam yang dimasak di dalam <strong>wadah bambu</strong> dengan bumbu rempah, menghasilkan rasa <strong>gurih</strong>, <strong>asap</strong>, dan <strong>asin</strong> yang khas. Melambangkan <em>tradisi memasak leluhur Timor</em>.</p>
+                </div>
+            `,
+
+            // ---------- 3. GALERI PRODUK ----------
+            'Galeri Produk': `
+                <h2>Simpul 3: Galeri Produk (Gambar, Video & Audio) <span class="badge-node">Node 3</span></h2>
+                <p>Dokumentasi visual dan multimedia produk kuliner unggulan UMKM Kupang. Gambar dimuat dari folder <code>Gambar/</code>.</p>
+
+                <h3>🖼️ Galeri Gambar Produk</h3>
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <img src="se'i sapi" alt="Se'i Sapi Khas Timor"
+                             onerror="imgFallback(this, 'Sei Sapi', '#fdebd0', '#f5cba7')">
+                        <div class="gallery-caption">Se'i Sapi Khas Timor</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="sambal luat.jpg" alt="Sambal Lu'at Khas Kupang"
+                             onerror="imgFallback(this, 'Sambal Luat', '#fadbd8', '#f5b7b1')">
+                        <div class="gallery-caption">Sambal Lu'at Khas Kupang</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="kue_jawada.jpg" alt="Kue Jawada Tradisional"
+                             onerror="imgFallback(this, 'kue_jawada', '#fcf3cf', '#f9e79f')">
+                        <div class="gallery-caption">KueJawada Tradisional</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="Jagung titi.jpg" alt="Jagung Titi Khas Timor"
+                             onerror="imgFallback(this, 'Jagung Titi', '#d5f5e3', '#a9dfbf')">
+                        <div class="gallery-caption">Jagung Titi Khas Timor</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="kopi timor.jpg" alt="Kopi Arabika Timor"
+                             onerror="imgFallback(this, 'Kopi Timor', '#e8daef', '#d2b4de')">
+                        <div class="gallery-caption">Kopi Arabika Timor</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="nasi kolo.jpg" alt="Nasi Kolo"
+                             onerror="imgFallback(this, 'Nasi Kolo', '#fdebd0', '#f8c471')">
+                        <div class="gallery-caption">Nasi Kolo</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="ikan.jpg" alt="Ikan Kuah Kuning"
+                             onerror="imgFallback(this, 'Ikan Kuah Kuning', '#d6eaf8', '#aed6f1')">
+                        <div class="gallery-caption">Ikan Kuah Kuning</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="jagung_bose.jpg" alt="jagung_bose"
+                             onerror="imgFallback(this, 'jagung_bose', '#fef9e7', '#f9e79f')">
+                        <div class="gallery-caption">Jagung Bose</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="Rumpu Rampe.jpg" alt="Rumpu Rampe"
+                             onerror="imgFallback(this, 'Rumpu Rampe', '#d5f5e3', '#a9dfbf')">
+                        <div class="gallery-caption">Rumpu Rampe</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="Manggulu.jpg" alt="Manggulu"
+                             onerror="imgFallback(this, 'Manggulu', '#fdebd0', '#f8c471')">
+                        <div class="gallery-caption">Manggulu</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="Palepah Manuk.jpg" alt="Palepah Manuk"
+                             onerror="imgFallback(this, 'Palepah Manuk', '#fadbd8', '#f5b7b1')">
+                        <div class="gallery-caption">Palepah Manuk</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="Wollapa.jpg" alt="Wollapa"
+                             onerror="imgFallback(this, 'Wollapa', '#fdebd0', '#f8c471')">
+                        <div class="gallery-caption">Wollapa</div>
+                    </div>
+                </div>
+
+                <h3>🎬 Video Dokumentasi</h3>
+                <div class="video-wrapper">
+                    <video controls preload="metadata" poster="">
+                        <source src="mknkhasntt.mp4" type="video/mp4">
+                        <source src="mknkhasntt.webm" type="video/webm">
+                        Browser Anda tidak mendukung elemen video.
+                    </video>
+                </div>
+                <p style="font-size:0.85rem;color:#777;">Video Makanan Khas Nusa Tenggara Timur.</p>
+
+                <h3>🔊 Audio Produk (Narasi)</h3>
+                <div class="audio-real">
+                    <h4>Narasi Produk Unggulan UMKM Kupang</h4>
+                    <audio controls>
+                        <source src="falsafahaudio.mpeg" type="audio/mpeg">
+                        Browser Anda tidak mendukung elemen audio.
+                    </audio>
+                    <p style="font-size:0.8rem;color:#777;margin-top:8px;">Audio contoh narasi katalog produk UMKM.</p>
+                </div>
+            `,
+
+            // ---------- 4. PETA INTERAKTIF ----------
+            'Peta Interaktif': `
+                <h2>Simpul 4: Peta Interaktif & Sitemap UMKM <span class="badge-node">Node 4</span></h2>
+                <p>Peta nyata sebaran sentra kuliner UMKM di Kota Kupang. Klik penanda untuk melihat info lokasi.</p>
+
+                <div id="map-real"></div>
+                <p class="map-note">📍 Peta berbasis OpenStreetMap dengan Leaflet.js — data koordinat sesuai lokasi nyata di Kota Kupang.</p>
+
+                <!-- Tombol Laporan PDF (kanan atas, sebelum sitemap) -->
+                <div class="laporan-section">
+                    <a class="btn-laporan"
+                       href="Dokumen/laporan.pdf"
+                       target="_blank"
+                       rel="noopener"
+                       title="Buka Laporan PDF di tab baru">
+                        <span class="pdf-icon">PDF</span>
+                        <span class="btn-text">
+                            Laporan
+                            <small>Klik untuk membaca</small>
+                        </span>
+                    </a>
+                </div>
+
+                <h3>Sitemap Navigasi Hypermedia</h3>
+                <div class="sitemap-tree">
+                    <ul>
+                        <li><a onclick="switchNode('Profil UMKM')">🏠 Profil UMKM</a>
+                            <ul>
+                                <li><a onclick="switchNode('Falsafah Rasa')">Falsafah Rasa</a></li>
+                                <li><a onclick="switchNode('Galeri Produk')">Galeri Produk</a></li>
+                            </ul>
+                        </li>
+                        <li><a onclick="switchNode('Peta Interaktif')">🗺️ Peta Interaktif</a></li>
+                    </ul>
+                </div>
+            `
+        };
+
+        // ================== VARIABEL PETA ==================
+        let mapInstance = null;
+
+        // ================== FUNGSI NAVIGASI ==================
+        function switchNode(nodeName) {
+            document.getElementById('current-node-name').innerText = nodeName;
+            const display = document.getElementById('content-display');
+            display.innerHTML = nodes[nodeName] || `<h2>Halaman tidak ditemukan</h2>`;
+
+            document.querySelectorAll('.node-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.node === nodeName);
+            });
+
+            if (nodeName === 'Peta Interaktif') {
+                setTimeout(initRealMap, 120);
+            }
+
+            display.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ================== FUNGSI PETA NYATA (Leaflet) ==================
+        function initRealMap() {
+            const mapEl = document.getElementById('map-real');
+            if (!mapEl) return;
+
+            if (mapInstance) {
+                mapInstance.remove();
+                mapInstance = null;
+            }
+
+            // 1. Inisialisasi peta dengan pusat Kota Kupang
+            mapInstance = L.map('map-real').setView([-10.1772, 123.6070], 13);
+
+            // 2. Tile layer — ESRI WORLD STREET MAP (gratis, tanpa API key)
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 19,
+                attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a> — Source: Esri, DeLorme, NAVTEQ'
+            }).addTo(mapInstance);
+
+            // 3. Data UMKM dengan koordinat nyata
+            const umkmList = [
+                {
+                    name: "Se'i Sapi & Sambal Lu'at Asli Kupang",
+                    coords: [-10.1650, 123.6070],
+                    desc: "Sentra pengasapan daging tradisional khas Timor."
+                },
+                {
+                    name: "Kue Tradisional Jawada & Jagung Titi",
+                    coords: [-10.1820, 123.5920],
+                    desc: "Komunitas ibu-ibu pengrajin kudapan tradisional."
+                },
+                {
+                    name: "Kopi Timor & Camilan Kacang Sembunyi",
+                    coords: [-10.1560, 123.6320],
+                    desc: "UMKM kopi arabika Timor dan camilan khas."
+                },
+                {
+                    name: "Nasi Kolo & Jagung Bose",
+                    coords: [-10.1900, 123.6200],
+                    desc: "Pengrajin nasi bambu dan jagung bose tradisional."
+                },
+                {
+                    name: "Ikan Kuah Kuning & Rumpu Rampe",
+                    coords: [-10.1450, 123.5800],
+                    desc: "Olahan hasil laut dan sayur khas pesisir Kupang."
+                }
+            ];
+
+            const colors = ['#d35400', '#e67e22', '#2c3e50', '#27ae60', '#8e44ad'];
+
+            umkmList.forEach((umkm, i) => {
+                const marker = L.circleMarker(umkm.coords, {
+                    radius: 12,
+                    fillColor: colors[i],
+                    color: '#ffffff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.95
+                }).addTo(mapInstance);
+
+                marker.bindPopup(`
+                    <div style="font-family: 'Inter', sans-serif; min-width:190px;">
+                        <strong style="color:${colors[i]}; font-family:'Poppins',sans-serif;">${umkm.name}</strong><br>
+                        <span style="font-size:12px;color:#555;">${umkm.desc}</span><br>
+                        <span style="font-size:11px;color:#888;">Koordinat: ${umkm.coords[0].toFixed(4)}, ${umkm.coords[1].toFixed(4)}</span>
+                    </div>
+                `);
+            });
+
+            L.marker([-10.1772, 123.6070])
+                .addTo(mapInstance)
+                .bindPopup("<strong>Pusat Kota Kupang</strong><br>Nusa Tenggara Timur")
+                .openPopup();
+        }
+
+        // ================== INISIALISASI ==================
+        document.querySelectorAll('.node-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchNode(btn.dataset.node));
+        });
+
+        switchNode('Profil UMKM');
+    </script>
+</body>
+</html>
